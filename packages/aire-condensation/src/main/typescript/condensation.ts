@@ -27,6 +27,19 @@ export interface Context {
 
   move<T>(address: Address, target: Region): Pointer<T> | null;
 
+
+  formalParams<T>(
+      t: Class<T>,
+      type: InvocationType,
+      ...args: string[]
+  ): any[];
+
+  invokeDirect<T, U>(
+      value: T,
+      op: string,
+      ...args: string[]
+  ): U | null;
+
   invoke<T, U>(
     address: Address | Pointer<T>,
     op: string,
@@ -89,6 +102,19 @@ class DefaultCondensationContext implements Context {
   delete<T>(address: Address): T | null {
     return this.region.delete(address);
   }
+  invokeDirect<T, U>(value: T, op: string, ...args: string[]): U | null {
+
+    const operation = (value as any)[op] as any;
+    if (!operation) {
+      throw new Error(`Type ${typeof value} has no method named '${op}'`);
+    }
+    const formals = this.formalParams(
+        Object.getPrototypeOf(value).constructor,
+        "method",
+        ...args
+    );
+    return operation.apply(value, formals);
+  }
 
   invoke<T, U>(
     address: Address | Pointer<T>,
@@ -127,7 +153,7 @@ class DefaultCondensationContext implements Context {
     return allocate(v, target);
   }
 
-  private formalParams<T>(
+  public formalParams<T>(
     t: Class<T>,
     type: InvocationType,
     ...args: string[]
@@ -149,6 +175,7 @@ class DefaultCondensationContext implements Context {
       return Condensation.deserializerFor(def.type).read(jsonValue);
     });
   }
+
 }
 
 export type RegistrationDefinition = {

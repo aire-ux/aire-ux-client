@@ -1,7 +1,7 @@
-import {Receive, Remotable} from "@condensation/remotable";
+import {Receive, Remotable, Remote} from "@condensation/remotable";
 import {Property, RootElement} from "@condensation/root-element";
 import {Condensation} from "@condensation/condensation";
-import {LitElement, customElement} from "lit-element";
+import {customElement, LitElement} from "lit-element";
 
 test("remotable should work with constructor arguments", () => {
   @RootElement
@@ -62,8 +62,8 @@ test("remotable should allow a value to be constructed", () => {
     }
   }
 
-  @customElement('test-receiver')
   @Remotable
+  @customElement('test-receiver')
   class TestReceiver extends LitElement {
     name: string | undefined;
 
@@ -238,4 +238,31 @@ test("pointers should be invocable", () => {
   );
 
   expect(mgr.person?.name).toBe("Josiah");
+});
+
+
+test("values should be invocable", () => {
+  @RootElement
+  class Person {
+    @Property(String)
+    name: string | undefined;
+  }
+
+  @Remotable
+  class MxGraphManager {
+    person: Person | undefined;
+
+    @Remote
+    public init(@Receive(Person) person: Person): void {
+      this.person = person;
+    }
+  }
+
+  const mgr = new MxGraphManager();
+  mgr.init(`{
+    "name": "Josiah"
+    }
+  ` as any);
+  expect(mgr?.person?.name).toBe("Josiah");
+
 });
