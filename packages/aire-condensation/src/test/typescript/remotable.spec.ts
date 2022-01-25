@@ -266,3 +266,59 @@ test("values should be invocable", () => {
   expect(mgr?.person?.name).toBe("Josiah");
 
 });
+
+test('canvas scenario should work', () => {
+  @RootElement
+  class Vertex {
+
+
+    @Property(Number)
+    private x: number | undefined;
+
+    @Property(Number)
+    private y: number | undefined;
+
+    @Property(Number)
+    private width: number | undefined;
+
+    @Property(Number)
+    private height : number | undefined;
+
+    @Property(String)
+    label: string | undefined;
+  }
+
+  @Remotable
+  @customElement('aire-canvas')
+  class Canvas extends LitElement {
+    readonly vertices: Vertex[];
+
+    constructor() {
+      super();
+      this.vertices = [];
+    }
+
+
+    @Remote
+    public addVertex(@Receive(Vertex) vertex: Vertex) {
+      this.vertices.push(vertex);
+      // this.graph?.addNode(vertex as any);
+    }
+  }
+
+  const canvas = new Canvas();
+  expect(canvas.vertices).toBeTruthy();
+  // @ts-ignore
+  canvas.addVertex(`
+  {
+    "x": null,
+    "y": null,
+    "label": "hello",
+    "width": null,
+    "height": null
+  }
+  `);
+  expect(canvas.vertices.length).toBe(1);
+  const vertex = canvas.vertices[0];
+  expect(vertex.label).toBe("hello");
+})
