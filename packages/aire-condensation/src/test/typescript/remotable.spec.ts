@@ -1,14 +1,39 @@
-import { Receive, Remotable } from "@condensation/remotable";
-import { Property, RootElement } from "@condensation/root-element";
-import { Condensation } from "@condensation/condensation";
+import {Receive, Remotable} from "@condensation/remotable";
+import {Property, RootElement} from "@condensation/root-element";
+import {Condensation} from "@condensation/condensation";
+import {LitElement, customElement} from "lit-element";
 
 test("remotable should work with constructor arguments", () => {
   @RootElement
-  class TestDTO {}
+  class TestDTO {
+  }
 
   @Remotable
   class TestReceiver {
-    constructor(@Receive(TestDTO) dto: TestDTO) {}
+    constructor(@Receive(TestDTO) dto: TestDTO) {
+    }
+  }
+
+  const defs = Condensation.remoteRegistry.resolve(TestReceiver).definitions;
+
+  expect(defs.length).toBe(1);
+  expect(defs[0].index).toBe(0);
+});
+
+test('remotable should work with subclasses', () => {
+  @RootElement
+  class TestDTO {
+  }
+
+  class Parent {
+    id: string | undefined;
+  }
+
+  @Remotable
+  class TestReceiver extends Parent {
+    constructor(@Receive(TestDTO) dto: TestDTO) {
+      super();
+    }
   }
 
   const defs = Condensation.remoteRegistry.resolve(TestReceiver).definitions;
@@ -37,14 +62,16 @@ test("remotable should allow a value to be constructed", () => {
     }
   }
 
+  @customElement('test-receiver')
   @Remotable
-  class TestReceiver {
+  class TestReceiver extends LitElement {
     name: string | undefined;
 
     constructor(
-      @Receive(Pet) public readonly pet: Pet,
-      @Receive(Person) public readonly dto: Person
+        @Receive(Pet) public readonly pet: Pet,
+        @Receive(Person) public readonly dto: Person
     ) {
+      super();
       this.name = dto.name;
     }
 
@@ -55,8 +82,8 @@ test("remotable should allow a value to be constructed", () => {
 
   const ctx = Condensation.newContext();
   const receiver = ctx.create<TestReceiver>(
-    TestReceiver,
-    `
+      TestReceiver,
+      `
   {
     "name": "Flances",
       "momma": {
@@ -64,7 +91,7 @@ test("remotable should allow a value to be constructed", () => {
       }
   }
   `,
-    `{
+      `{
     "name": "Josiah"
   }`
   );
@@ -129,13 +156,14 @@ test("ensure base use-case works", () => {
   @Remotable
   class MxGraphManager {
     constructor(
-      @Receive(GraphConfiguration) readonly configuration: GraphConfiguration
-    ) {}
+        @Receive(GraphConfiguration) readonly configuration: GraphConfiguration
+    ) {
+    }
   }
 
   const mgr = Condensation.newContext().create<MxGraphManager>(
-    MxGraphManager,
-    `{
+      MxGraphManager,
+      `{
       "load-resources": "loading them resources"
   }`
   );
@@ -197,12 +225,12 @@ test("pointers should be invocable", () => {
   }
 
   const ctx = Condensation.newContext(),
-    mgr = ctx.create<MxGraphManager>(MxGraphManager);
+      mgr = ctx.create<MxGraphManager>(MxGraphManager);
 
   ctx.invoke(
-    mgr,
-    "init",
-    `
+      mgr,
+      "init",
+      `
     {
       "name": "Josiah"
     }

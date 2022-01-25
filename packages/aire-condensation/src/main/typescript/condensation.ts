@@ -15,7 +15,6 @@ import {
   StringDeserializer,
   TypeRegistrationDeserializer,
 } from "@condensation/deserializer";
-import { add } from "husky";
 
 export type Format = "json";
 

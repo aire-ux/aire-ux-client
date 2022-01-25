@@ -23,12 +23,14 @@
   },
   "homepage": "https://github.com/aire-ux/aire-components#readme",
   "devDependencies": {
-    "@babel/preset-typescript": "^7.16.0",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
     "@types/jest": "^27.0.3",
     "@zerollup/ts-transform-paths": "^1.7.18",
     "husky": "^7.0.4",
     "jest": "^27.4.2",
     "lint-staged": "^12.1.2",
+    "lit": "2.0.0",
     "prettier": "2.5.0",
     "ts-jest": "^27.0.7",
     "ttypescript": "^1.5.13",
@@ -36,6 +38,7 @@
   },
   "jest": {
     "preset": "ts-jest",
+    "testEnvironment": "jsdom",
     "rootDir": "./",
     "testMatch": [
       "**/*.spec.ts"
@@ -47,7 +50,28 @@
       "src/main/typescript",
       "src/test/typescript"
     ],
+    "transform": {
+      "^.+\\.(js|ts)$": "ts-jest"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!\\@?lit)"
+    ],
     "globals": {
+      "ts-jest": {
+        "tsconfig": {
+          "allowJs": true
+        }
+      },
       "window": {}
     }
   },

@@ -1,9 +1,9 @@
 import { Class } from "@condensation/types";
 import { Condensation } from "@condensation/condensation";
 
-export function Remotable<T>(type: Class<T>): Class<T> {
+export function Remotable<T>(type: Class<T>): void {
   Condensation.remoteRegistry.register(type);
-  return type;
+  // return type;
 }
 
 export function Receive<T>(type: Class<T>) {
