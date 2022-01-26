@@ -37,7 +37,7 @@ export function Remote(
 ) {
   const original = descriptor.value;
   descriptor.value = function(...args: any[]) {
-    const formals = ctx.formalParams(target.constructor, 'method', ...args);
+    const formals = ctx.formalParams(target.constructor, 'method', propertyKey, ...args);
     return original.apply(this, formals);
     // return original.bind(target).apply(target, ...formals);
   }

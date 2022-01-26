@@ -91,7 +91,7 @@ class DefaultCondensationContext implements Context {
   constructor(readonly region = new Region("default")) {}
 
   create<T>(t: Class<T>, ...args: string[]): Pointer<T> {
-    const actualParams = this.formalParams(t, "constructor", ...args);
+    const actualParams = this.formalParams(t, "constructor", 'constructor', ...args);
     return allocate(new t(...actualParams) as T, this.region);
   }
 
@@ -111,6 +111,7 @@ class DefaultCondensationContext implements Context {
     const formals = this.formalParams(
         Object.getPrototypeOf(value).constructor,
         "method",
+        op,
         ...args
     );
     return operation.apply(value, formals);
@@ -139,6 +140,7 @@ class DefaultCondensationContext implements Context {
     const formals = this.formalParams(
       Object.getPrototypeOf(v).constructor,
       "method",
+      op,
       ...args
     );
     return operation.apply(v, formals);
@@ -156,12 +158,15 @@ class DefaultCondensationContext implements Context {
   public formalParams<T>(
     t: Class<T>,
     type: InvocationType,
+    operation: string,
     ...args: string[]
   ): any[] {
     const remotes = Condensation.remoteRegistry,
       remote = remotes.resolve(t),
       ctorArgs = remote.definitions.filter(
-        (definition) => definition.invocationType === type
+        (definition) =>
+            definition.invocationType === type
+            && definition.invocationTarget == operation
       );
     if (ctorArgs.length !== args.length) {
       throw new Error(

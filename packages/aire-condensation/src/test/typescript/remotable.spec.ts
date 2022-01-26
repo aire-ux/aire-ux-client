@@ -321,4 +321,76 @@ test('canvas scenario should work', () => {
   expect(canvas.vertices.length).toBe(1);
   const vertex = canvas.vertices[0];
   expect(vertex.label).toBe("hello");
+});
+
+test('add all should work', () => {
+  @RootElement
+  class Vertex {
+
+
+    @Property(Number)
+    private x: number | undefined;
+
+    @Property(Number)
+    private y: number | undefined;
+
+    @Property(Number)
+    private width: number | undefined;
+
+    @Property(Number)
+    private height : number | undefined;
+
+    @Property(String)
+    label: string | undefined;
+  }
+
+  @Remotable
+  @customElement('aire-canvas2')
+  class Canvas extends LitElement {
+    readonly vertices: Vertex[];
+
+    constructor() {
+      super();
+      this.vertices = [];
+    }
+
+
+    @Remote
+    public addVertex(@Receive(Vertex) vertex: Vertex) {
+      this.vertices.push(vertex);
+      // this.graph?.addNode(vertex as any);
+    }
+
+    @Remote
+    public addVertices(@Receive(Vertex) vertex: Vertex[]) {
+      this.vertices.push(...vertex);
+      // this.graph?.addNode(vertex as any);
+    }
+  }
+
+  const canvas = new Canvas();
+  expect(canvas.vertices).toBeTruthy();
+  // @ts-ignore
+  canvas.addVertices(`
+  [{
+    "x": null,
+    "y": null,
+    "label": "hello",
+    "width": null,
+    "height": null
+  },
+  
+  {
+    "x": null,
+    "y": null,
+    "label": "jello",
+    "width": null,
+    "height": null
+  }]
+  `);
+  expect(canvas.vertices.length).toBe(2);
+  let vertex = canvas.vertices[0];
+  expect(vertex.label).toBe("hello");
+  vertex = canvas.vertices[1];
+  expect(vertex.label).toBe("jello");
 })
