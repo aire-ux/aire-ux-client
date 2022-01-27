@@ -1,13 +1,6 @@
 import TypeRegistry from "@condensation/type-registry";
-import RemoteRegistry, { InvocationType } from "@condensation/remote-registry";
-import {
-  Address,
-  allocate,
-  Class,
-  isPointer,
-  Pointer,
-  Region,
-} from "@condensation/types";
+import RemoteRegistry, {InvocationType} from "@condensation/remote-registry";
+import {Dynamic, Address, allocate, Class, isPointer, Pointer, Region,} from "@condensation/types";
 import {
   BooleanDeserializer,
   Deserializer,
@@ -27,10 +20,23 @@ export interface Context {
 
   move<T>(address: Address, target: Region): Pointer<T> | null;
 
+
+  formalParams<T>(
+      t: Class<T>,
+      type: InvocationType,
+      ...args: string[]
+  ): any[];
+
+  invokeDirect<T, U>(
+      value: T,
+      op: string,
+      ...args: string[]
+  ): U | null;
+
   invoke<T, U>(
-    address: Address | Pointer<T>,
-    op: string,
-    ...args: string[]
+      address: Address | Pointer<T>,
+      op: string,
+      ...args: string[]
   ): U | null;
 
   delete<T>(address: Address): T | null;
@@ -47,7 +53,7 @@ export class Condensation {
   static remoteRegistry: RemoteRegistry;
 
   static deserializerConfigurations: Map<Class<any>, Deserializer<any>> =
-    new Map<Class<any>, Deserializer<any>>();
+      new Map<Class<any>, Deserializer<any>>();
 
   static get typeRegistry(): TypeRegistry {
     return Condensation.registry;
@@ -75,10 +81,11 @@ export class Condensation {
 }
 
 class DefaultCondensationContext implements Context {
-  constructor(readonly region = new Region("default")) {}
+  constructor(readonly region = new Region("default")) {
+  }
 
   create<T>(t: Class<T>, ...args: string[]): Pointer<T> {
-    const actualParams = this.formalParams(t, "constructor", ...args);
+    const actualParams = this.formalParams(t, "constructor", 'constructor', ...args);
     return allocate(new t(...actualParams) as T, this.region);
   }
 
@@ -90,10 +97,25 @@ class DefaultCondensationContext implements Context {
     return this.region.delete(address);
   }
 
+  invokeDirect<T, U>(value: T, op: string, ...args: string[]): U | null {
+
+    const operation = (value as any)[op] as any;
+    if (!operation) {
+      throw new Error(`Type ${typeof value} has no method named '${op}'`);
+    }
+    const formals = this.formalParams(
+        Object.getPrototypeOf(value).constructor,
+        "method",
+        op,
+        ...args
+    );
+    return operation.apply(value, formals);
+  }
+
   invoke<T, U>(
-    address: Address | Pointer<T>,
-    op: string,
-    ...args: string[]
+      address: Address | Pointer<T>,
+      op: string,
+      ...args: string[]
   ): U | null {
     let v: Pointer<T>;
     if (isPointer(address)) {
@@ -103,7 +125,7 @@ class DefaultCondensationContext implements Context {
     }
     if (!v) {
       throw new Error(
-        `Null pointer exception at ${address} while trying to invoke ${op}`
+          `Null pointer exception at ${address} while trying to invoke ${op}`
       );
     }
     const operation = (v as any)[op] as any;
@@ -111,9 +133,10 @@ class DefaultCondensationContext implements Context {
       throw new Error(`Type ${typeof v} has no method named '${op}'`);
     }
     const formals = this.formalParams(
-      Object.getPrototypeOf(v).constructor,
-      "method",
-      ...args
+        Object.getPrototypeOf(v).constructor,
+        "method",
+        op,
+        ...args
     );
     return operation.apply(v, formals);
   }
@@ -127,28 +150,38 @@ class DefaultCondensationContext implements Context {
     return allocate(v, target);
   }
 
-  private formalParams<T>(
-    t: Class<T>,
-    type: InvocationType,
-    ...args: string[]
+  public formalParams<T>(
+      t: Class<T>,
+      type: InvocationType,
+      operation: string,
+      ...args: string[]
   ): any[] {
     const remotes = Condensation.remoteRegistry,
-      remote = remotes.resolve(t),
-      ctorArgs = remote.definitions.filter(
-        (definition) => definition.invocationType === type
-      );
+        remote = remotes.resolve(t),
+        ctorArgs = remote.definitions.filter(
+            (definition) =>
+                definition.invocationType === type
+                && definition.invocationTarget == operation
+        );
     if (ctorArgs.length !== args.length) {
       throw new Error(
-        `Error: ${type} argument count mismatch.  Expected ${ctorArgs.length}, got ${args.length}`
+          `Error: ${type} argument count mismatch.  Expected ${ctorArgs.length}, got ${args.length}`
       );
     }
+
     ctorArgs.sort((lhs, rhs) => lhs.index - rhs.index);
     return ctorArgs.map((def, idx) => {
       const doc = args[idx],
-        jsonValue = JSON.parse(doc);
-      return Condensation.deserializerFor(def.type).read(jsonValue);
+          jsonValue = JSON.parse(doc);
+      if (def.type !== Dynamic) {
+        const deserializer = Condensation.deserializerFor(def.type);
+        return deserializer.read(jsonValue);
+      } else {
+        return jsonValue;
+      }
     });
   }
+
 }
 
 export type RegistrationDefinition = {
@@ -162,21 +195,22 @@ export function register(...registrations: RegistrationDefinition[]) {
   }
 }
 
-export namespace Condensation {}
+export namespace Condensation {
+}
 Condensation.registry = new TypeRegistry();
 Condensation.remoteRegistry = new RemoteRegistry();
 
 register(
-  {
-    type: String,
-    deserializer: new StringDeserializer(),
-  },
-  {
-    type: Boolean,
-    deserializer: new BooleanDeserializer(),
-  },
-  {
-    type: Number,
-    deserializer: new NumberDeserializer(),
-  }
+    {
+      type: String,
+      deserializer: new StringDeserializer(),
+    },
+    {
+      type: Boolean,
+      deserializer: new BooleanDeserializer(),
+    },
+    {
+      type: Number,
+      deserializer: new NumberDeserializer(),
+    }
 );

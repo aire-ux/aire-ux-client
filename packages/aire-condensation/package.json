@@ -1,12 +1,13 @@
 {
   "name": "@aire-ux/aire-condensation",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "Client-side serialization library for Aire-UX",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc -p tsconfig.json",
     "test": "npx jest",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .",
+    "prepublish": "npx jest && ttsc -p tsconfig.json"
   },
   "repository": {
     "type": "git",
