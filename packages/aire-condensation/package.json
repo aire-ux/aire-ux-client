@@ -6,7 +6,8 @@
   "scripts": {
     "build": "ttsc -p tsconfig.json",
     "test": "npx jest",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .",
+    "prepublish": "npx jest && ttsc -p tsconfig.json"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,7 @@
-import {Dynamic, Receive, Remotable, Remote} from "@condensation/remotable";
+import {Receive, Remotable, Remote} from "@condensation/remotable";
 import {Property, RootElement} from "@condensation/root-element";
 import {Condensation} from "@condensation/condensation";
+import {Dynamic} from "@condensation/types";
 import {customElement, LitElement} from "lit-element";
 
 test("remotable should work with constructor arguments", () => {
@@ -183,21 +184,26 @@ test("ensure array is deserializable", () => {
     members: Person[] | undefined;
   }
 
-  const group = Condensation.deserializerFor<Group>(Group).read([
-    {
-      name: "Josiah",
-    },
-    {
-      name: "Lisa",
-    },
-    {
-      name: "Alejandro",
-    },
+  const group = Condensation.deserializerFor<Group>(Group).read(
+      {
+        members: [
+          {
+            name: "Josiah",
+          },
+          {
+            name: "Lisa",
+          },
+          {
+            name: "Alejandro",
+          },
 
-    {
-      name: "Tiff",
-    },
-  ]);
+          {
+            name: "Tiff",
+          },
+
+        ]
+      }
+  );
 
   expect(group.members?.length).toBe(4);
   expect(group.members?.map((m) => m.name)).toEqual([
@@ -282,7 +288,7 @@ test('canvas scenario should work', () => {
     private width: number | undefined;
 
     @Property(Number)
-    private height : number | undefined;
+    private height: number | undefined;
 
     @Property(String)
     label: string | undefined;
@@ -328,11 +334,13 @@ test('parsing json to a type should work', () => {
   type Whatever = {
     hello: string
   };
+
   @Remotable
   class Test {
     readonly whatevers: Whatever[] = [];
+
     @Remote
-    add(@Receive(Dynamic) whatever: Whatever) : void {
+    add(@Receive(Dynamic) whatever: Whatever): void {
       this.whatevers.push(whatever)
     }
   }
@@ -348,17 +356,18 @@ test('parsing json to a type should work', () => {
 });
 
 
-
 test('parsing json to a list type should work', () => {
 
   type Whatever = {
     hello: string
   };
+
   @Remotable
   class Test {
     readonly whatevers: Whatever[] = [];
+
     @Remote
-    add(@Receive(Dynamic) whatever: Whatever[]) : void {
+    add(@Receive(Dynamic) whatever: Whatever[]): void {
       this.whatevers.push(...whatever)
     }
   }
@@ -391,7 +400,7 @@ test('add all should work', () => {
     private width: number | undefined;
 
     @Property(Number)
-    private height : number | undefined;
+    private height: number | undefined;
 
     @Property(String)
     label: string | undefined;

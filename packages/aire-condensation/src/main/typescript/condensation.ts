@@ -1,6 +1,6 @@
 import TypeRegistry from "@condensation/type-registry";
 import RemoteRegistry, {InvocationType} from "@condensation/remote-registry";
-import {Address, allocate, Class, isPointer, Pointer, Region,} from "@condensation/types";
+import {Dynamic, Address, allocate, Class, isPointer, Pointer, Region,} from "@condensation/types";
 import {
   BooleanDeserializer,
   Deserializer,
@@ -8,7 +8,6 @@ import {
   StringDeserializer,
   TypeRegistrationDeserializer,
 } from "@condensation/deserializer";
-import {Dynamic} from "@condensation/remotable";
 
 export type Format = "json";
 
@@ -169,13 +168,12 @@ class DefaultCondensationContext implements Context {
           `Error: ${type} argument count mismatch.  Expected ${ctorArgs.length}, got ${args.length}`
       );
     }
-    const dynamicType = Dynamic.constructor;
 
     ctorArgs.sort((lhs, rhs) => lhs.index - rhs.index);
     return ctorArgs.map((def, idx) => {
       const doc = args[idx],
           jsonValue = JSON.parse(doc);
-      if (def.type?.constructor !== dynamicType) {
+      if (def.type !== Dynamic) {
         const deserializer = Condensation.deserializerFor(def.type);
         return deserializer.read(jsonValue);
       } else {

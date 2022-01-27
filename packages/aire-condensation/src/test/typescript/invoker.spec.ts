@@ -1,5 +1,5 @@
 import { locate } from "@condensation/invoker";
-import { Condensation, Receive, Remotable } from "@condensation/index";
+import { Receive, Remotable } from "@condensation/index";
 
 test("an invoker must locate a property correctly", () => {
   class B {}
