@@ -1,4 +1,4 @@
-import {Receive, Remotable, Remote} from "@condensation/remotable";
+import {Dynamic, Receive, Remotable, Remote} from "@condensation/remotable";
 import {Property, RootElement} from "@condensation/root-element";
 import {Condensation} from "@condensation/condensation";
 import {customElement, LitElement} from "lit-element";
@@ -323,6 +323,59 @@ test('canvas scenario should work', () => {
   expect(vertex.label).toBe("hello");
 });
 
+test('parsing json to a type should work', () => {
+
+  type Whatever = {
+    hello: string
+  };
+  @Remotable
+  class Test {
+    readonly whatevers: Whatever[] = [];
+    @Remote
+    add(@Receive(Dynamic) whatever: Whatever) : void {
+      this.whatevers.push(whatever)
+    }
+  }
+
+  let a = new Test();
+  // @ts-ignore
+  a.add(`
+    {"hello": "world"}
+  `);
+
+  expect(a.whatevers.length).toBe(1);
+  expect(a.whatevers[0].hello).toBe("world");
+});
+
+
+
+test('parsing json to a list type should work', () => {
+
+  type Whatever = {
+    hello: string
+  };
+  @Remotable
+  class Test {
+    readonly whatevers: Whatever[] = [];
+    @Remote
+    add(@Receive(Dynamic) whatever: Whatever[]) : void {
+      this.whatevers.push(...whatever)
+    }
+  }
+
+  let a = new Test();
+  // @ts-ignore
+  a.add(`[
+    {"hello": "world"},
+    {"hello": "jorld"}
+    ]
+  `);
+
+  expect(a.whatevers.length).toBe(2);
+  expect(a.whatevers[0].hello).toBe("world");
+  expect(a.whatevers[1].hello).toBe("jorld");
+});
+
 test('add all should work', () => {
   @RootElement
   class Vertex {
@@ -393,4 +446,6 @@ test('add all should work', () => {
   expect(vertex.label).toBe("hello");
   vertex = canvas.vertices[1];
   expect(vertex.label).toBe("jello");
-})
+});
+
+

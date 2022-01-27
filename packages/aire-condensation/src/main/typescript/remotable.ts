@@ -9,6 +9,10 @@ export function Remotable<T>(type: Class<T>): void {
 
 const ctx = Condensation.defaultContext();
 
+export class Dynamic {
+
+}
+
 export function Receive<T>(type: Class<T>) {
   return <U>(target: Class<U>, key: PropertyKey, index: number) => {
     if (!key) {
