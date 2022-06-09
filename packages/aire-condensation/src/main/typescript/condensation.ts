@@ -171,13 +171,12 @@ class DefaultCondensationContext implements Context {
 
     ctorArgs.sort((lhs, rhs) => lhs.index - rhs.index);
     return ctorArgs.map((def, idx) => {
-      const doc = args[idx],
-          jsonValue = JSON.parse(doc);
+      const doc = args[idx];
       if (def.type !== Dynamic) {
         const deserializer = Condensation.deserializerFor(def.type);
-        return deserializer.read(jsonValue);
+        return deserializer.read(deserializer.primitive ? doc : JSON.parse(doc));
       } else {
-        return jsonValue;
+        return JSON.parse(doc);
       }
     });
   }

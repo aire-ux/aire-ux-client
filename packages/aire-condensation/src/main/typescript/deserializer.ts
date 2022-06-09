@@ -4,28 +4,33 @@ import {TypeRegistration} from "@condensation/type-registry";
 import {Condensation} from "@condensation/condensation";
 
 export interface Deserializer<T> {
+  primitive: boolean;
   read(object: any): T;
 }
 
 export class StringDeserializer implements Deserializer<string> {
+  primitive = true;
   read(object: any): string {
     return object as string;
   }
 }
 
 export class BooleanDeserializer implements Deserializer<boolean> {
+  primitive = true;
   read(object: any): boolean {
     return object as boolean;
   }
 }
 
 export class NumberDeserializer implements Deserializer<number> {
+  primitive = true;
   read(object: any): number {
     return object as number;
   }
 }
 
 export class TypeRegistrationDeserializer<T> implements Deserializer<T> {
+  primitive = false;
   constructor(
       readonly type: Class<T>,
       readonly registration: TypeRegistration<T>

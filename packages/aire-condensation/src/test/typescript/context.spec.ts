@@ -1,6 +1,6 @@
 import { Condensation, Context } from "@condensation/condensation";
 import { Property, RootElement } from "@condensation/root-element";
-import { Receive, Remotable } from "@condensation/remotable";
+import {Receive, Remotable, Remote} from "@condensation/remotable";
 import { allocate, Region } from "@condensation/types";
 
 let context: Context;
@@ -50,6 +50,52 @@ test("objects should be allocatable in a context", () => {
   );
 
   expect(value.firstName).toBe("Josiah");
+});
+
+
+test('objects should be able to receive escaped string primitives', () => {
+
+  @Remotable
+  class RemotePerson {
+    firstName: string | undefined;
+
+
+    @Remote
+    setFirstName(@Receive(String) name: string) : void {
+      this.firstName = name;
+    }
+
+  }
+
+  const value = context.create<RemotePerson>(
+      RemotePerson
+  );
+
+  context.invoke(value, 'setFirstName', "Josiah");
+  expect(value.firstName).toBe("Josiah");
+
+});
+
+test('objects should be able to receive string primitives', () => {
+
+  @Remotable
+  class RemotePerson {
+    firstName: string | undefined;
+
+
+    @Remote
+    setFirstName(@Receive(String) name: string) : void {
+      this.firstName = name;
+    }
+
+  }
+
+  const value = context.create<RemotePerson>(
+      RemotePerson
+  );
+  context.invoke(value, 'setFirstName', "Josiah");
+  expect(value.firstName).toBe("Josiah");
+
 });
 
 test("objects should be invocable by their handles", () => {

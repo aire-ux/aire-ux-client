@@ -185,7 +185,7 @@ test("ensure array is deserializable", () => {
   }
 
   const group = Condensation.deserializerFor<Group>(Group).read(
-      {
+      JSON.stringify({
         members: [
           {
             name: "Josiah",
@@ -202,7 +202,7 @@ test("ensure array is deserializable", () => {
           },
 
         ]
-      }
+      })
   );
 
   expect(group.members?.length).toBe(4);
