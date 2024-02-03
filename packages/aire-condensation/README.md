@@ -1,9 +1,15 @@
 # Overview
 
-Condensation is a library that allows transparent client-server communication for @aire-ux/component
-widgets.
 
+Condensation is a library for transparently hydrating JavaScript or 
+TypeScript objects from a variety of formats 
+(JSON, XML, Avro, gRPC, Cap'n Proto)
 ## Usage
+
+### JVM/Java
+
+This process is optional, but if you use a JVM language and servlet technologies, then you
+can map your JVM objects directly to Condensation-mapped objects and call methods remotely
 
 ### Define the AireServlet
 
@@ -13,7 +19,7 @@ widgets.
     }
 ```
 
-### DTO
+# Generic Usage (backend-agnostic)
 
 Define a data-transfer object:
 
@@ -30,7 +36,40 @@ class Address {
 
   @Property(String)
   city: string;
+    
+  showInfo() : void {
+      console.log(`City: ${this.city}, Rooms: ${this.roomCount}`)
+  }   
 }
+```
+
+This object may be mounted from the following JSON document:
+
+```json
+{
+  "room-count": 4,
+  "city": "Fort Collins"
+}
+
+```
+```typescript
+
+/**
+ this context can be made a global object
+*/     
+const context = Condensation.newContext();
+const jsonDoc = await load('path/to/my/address'); // path returning above document
+const address = ctx.create(Address, jsonDoc);
+
+address.showInfo();
+// logs City: Fort Collins, Rooms: 4
+
+
+
+```
+
+```typescript
+
 
 @RootElement
 class Person {
@@ -71,3 +110,5 @@ class RemotableGroup {
 
 const group = Condensation.newContext().bind(RemotableGroup);
 ```
+
+
