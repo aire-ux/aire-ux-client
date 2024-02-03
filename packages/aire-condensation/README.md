@@ -66,7 +66,55 @@ address.showInfo();
 ```
 
 Condensation is capable of serializing/deserializing entire object-graphs,
-including graphs that contain cycles
+including graphs that contain cycles:
+
+
+```typescript
+@Remotable
+@RootElement
+class Person {
+    @Identity({properties:["commonName", "givenName"]})
+    @Property(String)
+    commonName: string;
+    
+    @Property({
+        type: String,
+        read: {
+            alias: 'common-name' // can be read from "common-name" payload property
+        },
+        write: {
+            alias: 'CommonName'  // will be written to "CommonName" payload property on write
+        }
+    })
+    givenName: string;
+    
+    constructor(
+        @Linked(via = "parent")
+        @Receive(Person) public readonly parents: Array<Person>,
+        @Linked(via = "children")
+        @Receive(Person) public readonly children: Array<Person>
+    ) {
+    }
+    
+
+}
+
+```
+
+input document
+```json
+[ 
+    {
+      "common-name": "Haswell",
+      "given-name": "Dad"
+    },
+    {
+      "common-name": "Haswell",
+      "given-name": "Josiah",
+      "parent": "Dad" // generated from commonName property of Identity.  @Linked annotations will correctly link Dad -> Josiah via parent and children properties
+    }
+]
+```
 
 ```typescript
 
