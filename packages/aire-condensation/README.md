@@ -63,10 +63,10 @@ const address = ctx.create(Address, jsonDoc);
 
 address.showInfo();
 // logs City: Fort Collins, Rooms: 4
-
-
-
 ```
+
+Condensation is capable of serializing/deserializing entire object-graphs,
+including graphs that contain cycles
 
 ```typescript
 
