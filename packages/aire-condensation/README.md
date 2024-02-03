@@ -73,25 +73,26 @@ including graphs that contain cycles:
 @Remotable
 @RootElement
 class Person {
-    @Identity({properties:["commonName", "givenName"]})
+    @Identity
     @Property(String)
     commonName: string;
-    
+
+    @Identity
     @Property({
         type: String,
         read: {
-            alias: 'common-name' // can be read from "common-name" payload property
+            alias: 'given-name' // can be read from "given-name" payload property
         },
         write: {
-            alias: 'CommonName'  // will be written to "CommonName" payload property on write
+            alias: 'GivenName'  // will be written to "GivenName" payload property on write
         }
     })
     givenName: string;
     
     constructor(
-        @Linked(via = "parent")
-        @Receive(Person) public readonly parents: Array<Person>,
         @Linked(via = "children")
+        @Receive(Person) public readonly parents: Array<Person>,
+        @Linked(via = "parents")
         @Receive(Person) public readonly children: Array<Person>
     ) {
     }
